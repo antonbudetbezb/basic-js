@@ -1,21 +1,68 @@
 const { NotImplementedError } = require('../extensions/index.js');
 
-/**
- * Create transformed array based on the control sequences that original
- * array contains
- * 
- * @param {Array} arr initial array
- * @returns {Array} transformed array
- * 
- * @example
- * 
- * transform([1, 2, 3, '--double-next', 4, 5]) => [1, 2, 3, 4, 4, 5]
- * transform([1, 2, 3, '--discard-prev', 4, 5]) => [1, 2, 4, 5]
- * 
- */
-function transform(/* arr */) {
-  throw new NotImplementedError('Not implemented');
-  // remove line with error and write your code here
+
+function transform(arr) {
+  if (!Array.isArray(arr)) {
+    throw new Error ("'arr' parameter must be an instance of the Array!")
+  }
+
+  let length = arr.length;
+  let controlConsId = {};
+
+  for (let i = 0; i < length; i++) {
+    if (typeof arr[i] == 'string') {
+      controlConsId[i] = arr[i];
+    }
+  }
+  
+  let result = [...arr];
+  let currentPosition = 0;
+
+  for (let i = 0; i < length; i++) {
+    if (i in controlConsId) {
+      switch (controlConsId[i]) {
+        
+        case '--double-next':
+          if (currentPosition == length - 1) {
+            result.splice(currentPosition, 1)
+            break;
+          }
+          result.splice(currentPosition, 1, result[currentPosition + 1])
+          break;
+  
+        case '--double-prev':
+          if (currentPosition == 0) {
+            result.splice(currentPosition, 1)
+            break;
+          }
+          result.splice(currentPosition, 1, result[currentPosition - 1])
+          break;
+  
+        case '--discard-next':
+          if (currentPosition == length - 1) {
+            result.splice(currentPosition, 1)
+            break;
+          }
+          result.splice(currentPosition, 2, '')
+          length -= 2
+          currentPosition -= 1
+          break;
+  
+        case '--discard-prev':
+          if (result[currentPosition - 1] == '' || currentPosition == 0) {
+            result.splice(currentPosition, 1)
+            break
+          }
+          result.splice(currentPosition-1, 2)
+          length -= 2
+          currentPosition -= 2
+          break;
+      }
+    }
+    currentPosition++
+  }
+
+  return result.filter(el => el !== '');
 }
 
 module.exports = {
